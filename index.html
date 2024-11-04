@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<audio id="audio" src="sandmann.mp3" ></audio>
+<head>
+ <script src="digitalclock.js"></script>
+ <script src="analogclock.js"></script>
+<style>
+
+.header {
+      grid-area: h;
+    height:220px;
+}
+
+.cheader {
+    grid-area: ch;
+    margin-top:120px;
+    
+}
+
+#prgbar {
+    grid-area: p;
+    margin-top:2%;
+}
+
+#leftoben, #middleoben, #rightoben {
+    display:none;
+  text-align: center;
+}
+
+#leftoben {
+    grid-area: cdl;
+}
+
+#middleoben {
+    grid-area: cdm;
+}
+
+#rightoben {
+    grid-area: cdr;
+}
+
+#leftunten {
+    grid-area: cal;
+}
+
+#middleunten {
+    grid-area: cam;
+}
+
+#rightunten {
+    grid-area: car;
+}
+
+.grid-container {
+  width:100%;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto 80px auto auto auto ;
+  grid-template-areas:  'h   h   h'
+                        'cdl  cdm  cdr'
+                        'cal  cam  car'
+                        'p   p   p'
+                        'ch  ch  ch';
+                       
+}
+
+div {
+  padding: 0 0;
+  font-size: 36px;
+  //border: 1px solid gray;
+}
+
+.ac {
+    margin-left:auto;
+    margin-right:auto;
+    box-sizing: border-box;
+    width:100%;
+    transition: opacity 2s;
+    z-index:1;
+}
+
+
+
+#bett, #tv, #schnecke {
+    position:absolute;
+    height:160px;
+}
+
+#bett {
+    right:2%;
+    padding-top:5%;
+}
+
+#tv{
+    left:4%;
+    margin-top:20px;
+}
+
+#schnecke {
+    transition: left 0.5s;
+    height:190px;
+    left:30%;
+}
+
+body {
+    background-image: url("wiese2.png");
+    background-repeat:repeat-x;
+    background-position: bottom    ;
+    
+    background-color:#cceeff;
+    transition: background-color 5s;
+}
+
+#vogel {
+    position:absolute;
+    height:100px;
+    left:23%;
+    top:12%;
+    transition: all 2s;
+}
+
+#sonne {
+    margin-top:20px;
+    padding-left: 65%;
+    position:absolute;
+    z-index:1;
+    transition: all 3s ease-out;
+}
+
+#stars {
+    position:absolute;
+    top:-400px;
+    left:0;
+    width:100%;
+    height:380px;
+    transition: all 3s;
+}
+
+</style>
+</head>
+<canvas id="stars"></canvas>
+<body onload="go()">
+
+<div class="grid-container">
+
+  <div class="header" onclick="rotateBird()">
+    <img id="sonne" src="sonne.gif">
+    <img id="vogel" src="vogel.png">
+  </div>
+   
+  <div id="leftoben"></div>
+  <div id="middleoben"></div>
+  <div id="rightoben"></div>
+ 
+  <canvas id="leftunten" onmousedown="toggleOpacity(this)" class="ac"></canvas>
+  <canvas id="middleunten" onmousedown="toggleOpacity(this)" class="ac"></canvas>
+  <canvas id="rightunten"  onmousedown="toggleOpacity(this)" class="ac"></canvas>
+ 
+  <div id="prgbar">
+    <img id="tv" src="tv.png">
+    <img id="bett" src="bett.png">
+    <img id="schnecke" src="schnecke.gif"></img>
+  </div>
+ 
+   <div class="cheader">
+    <input type="text" id="start" value="HH:mm" onkeyup="updateAlarmClock()" onfocus='clockFade("1.0")'>
+    <input type="button" id="text" value="los!" onclick="countdown()">
+  </div>
+ 
+</div>
+
+</body>
+
+<script>
+
+new stars("stars", 300, 100).run();
+
+var timeStart = new Date();
+var timeEnd = new Date();
+var timeNow = new Date();
+
+timeEnd.setSeconds(timeEnd.getSeconds()+3);
+
+currentTime();
+
+function toggleOpacity(x) {
+    var i = x.style.opacity;
+    
+    if (i == "1"){
+        x.style.opacity = "0.1";
+    } else {
+        x.style.opacity = "1.0";
+    }
+    
+}
+
+function play(){
+       var audio = document.getElementById("audio");
+       audio.play();
+}
+
+function updateAlarmClock() {
+
+    isRunning = false;
+
+    var time = document.getElementById("start");
+    
+    console.log("updateAlarmClock " + time.value);
+    
+    timeEnd.setHours(time.value.substr(0,2));
+    timeEnd.setMinutes(time.value.substr(3,2));
+    timeEnd.setSeconds(0);
+    
+    console.log("d3"+timeEnd);
+    
+    analogClock("rightunten", timeEnd);
+}
+
+function countdown() {
+
+    timeStart = new Date();
+    analogClock("leftunten", timeStart);
+    timeEnd = new Date();
+    
+    var time = document.getElementById("start");
+    
+    timeEnd.setHours(time.value.substr(0,2));
+    timeEnd.setMinutes(time.value.substr(3,2));
+    timeEnd.setSeconds(0);
+    
+    isRunning = timeEnd>timeNow;
+    
+    if (isRunning) {
+        var audio = document.getElementById("audio");
+           audio.load();
+           audio.pause();
+
+		document.getElementById("schnecke").src="schnecke.gif";
+		document.getElementById("schnecke").style.height="190px";
+		document.getElementById("schnecke").style.marginTop="0px";
+        document.getElementById("sonne").style.paddingTop="20px";
+        document.getElementById("sonne").style.opacity="1.0";
+        document.getElementById("stars").style.top="-400px";
+        document.getElementById("stars").style.display="none";
+        document.getElementById("stars").style.visibility="hidden";
+        document.getElementById("vogel").style.opacity="1.0";
+        document.body.style.backgroundColor = "#cceeff";
+        
+        var clocks = document.getElementsByClassName("ac");
+        console.log("clocks="+ clocks.length);
+        for (var c=0; c<clocks.length; c++){
+            clocks[c].style.opacity ="0.1";
+        }
+            
+        
+        
+        
+        //DEBUG
+        //timeEnd = new Date();
+        //timeEnd.setSeconds(timeEnd.getSeconds()+3);
+        
+        
+        go();
+    }
+}
+
+function currentTime() {
+     timeNow = new Date();
+     analogClock("middleunten", timeNow);
+    
+     if (!isRunning) {
+        analogClock("leftunten", timeNow);
+     }
+    
+     setTimeout(currentTime, 1000);
+}
+    
+var isRunning = false;
+    
+function go() {
+
+    //analogClock("leftunten", timeStart);
+    analogClock("rightunten", timeEnd);
+    
+    if (isRunning){
+        updateProgbar(timeStart, timeNow, timeEnd);
+    
+        if (timeNow<timeEnd) {
+            setTimeout(go, 1000);
+        } else {
+            isRunning=false;
+            play();
+            document.body.style.backgroundColor = "#100033";
+            document.getElementById("sonne").style.opacity="0.0";
+            document.getElementById("sonne").style.paddingTop="400px";
+            document.getElementById("vogel").style.opacity="0.0";
+            document.getElementById("schnecke").src="schnecke.gif";
+            document.getElementById("schnecke").style.height="100px";
+            document.getElementById("schnecke").style.marginTop="50px";
+              document.getElementById("schnecke").style.left="790px";
+            var clocks = document.getElementsByClassName("ac");
+            console.log("clocks="+ clocks.length);
+            for (var c=0; c<clocks.length; c++){
+                clocks[c].style.opacity ="0.0";
+            }
+        
+            document.getElementById("stars").style.display="block";
+            setTimeout(starsFadeIn, 4000);
+        }
+    }
+}
+
+function starsFadeIn(){
+    document.getElementById("stars").style.visibility="visible";
+    document.getElementById("stars").style.top="0px";
+}
+
+function clockFade(fade) {
+    console.log("clock fde");
+    var elems = document.getElementsByClassName("ac");
+    for (var t=0; t<elems.length; t++) {
+        elems[t].style.opacity=fade;
+    }
+    
+}
+
+
+var br = false;
+function rotateBird(){
+    document.getElementById("vogel").style.transform = "rotate(" + (br?0:360)+ "deg)";
+        br=!br;
+}
+
+function updateProgbar(dateStart, dateNow, dateTo) {
+    var diff = (dateTo - dateNow)/1000;
+    var total = (dateTo - dateStart)/1000;
+    
+    var offSet = 0.15;
+    
+    var pct = 100 - (100 * (diff/total));
+    
+    if (pct > 80) {
+        clockFade("1.0");
+    }
+    
+    var schnecke = document.getElementById("schnecke");
+    
+    var parentWidth = schnecke.parentElement.clientWidth;
+    console.log("pw " + parentWidth);
+    
+    var max = parentWidth * ( 1 - offSet );
+    
+    max-=schnecke.width;
+    
+    console.log("parent max " + max);
+    
+    var w = max * (pct / 100 ) + (max * offSet);
+        
+    console.log("width " + w + "("+pct+")");
+        
+    console.log("sw="+ schnecke.width);
+    
+    schnecke.style.left=w+"px";
+    
+}
+
+function stars(div, stars, delay)  {
+    
+    var that = this;
+    
+    this.xa = new Array();
+    this.ya = new Array();
+    
+    this.div = div;
+    
+    this.element = document.getElementById(div);
+        
+    this.dimx = this.element.width;
+    this.dimy = this.element.height;
+    
+    //console.log("x/y"+this.dimx+"/"+this.dimy);
+    
+    this.stars = stars;
+    this.delay = delay;
+
+    this.ctx = "";
+    this.i = 0;
+    
+    function drawstar() {
+        
+        var violett = "#3a0065";
+        var gelb = "#f6f6e0";
+        var weiss = "#ccc";
+        var grau1 = "#222";
+        var grau2 = "#444";
+        var grau3 = "#777";
+    
+    
+        that.i++;
+                
+        if (that.i>that.stars) {
+            that.i =0;
+        }
+        
+        var _i = that.i;
+ 
+        x = Math.random()*that.dimx;
+        y = Math.random()*that.dimy;
+
+        // alten Stern lÃ¶schen
+        if (that.xa[_i]>0) {
+            that.ctx.fillStyle="#100033";
+            that.ctx.beginPath();
+            that.ctx.arc(that.xa[_i],that.ya[_i],4,0,2*Math.PI);
+            that.ctx.fill();
+        }
+ 
+        that.xa[_i] = x;
+        that.ya[_i] = y;
+ 
+        that.ctx.beginPath();
+ 
+        rnd = Math.random()*100;
+ 
+        var w = 1;  
+        if (rnd>80) w = 2;
+        if (rnd>95) w = 3;
+    
+        var rnd2 = Math.random()*100;
+        
+        var color = grau1;
+        if (rnd2>60) color = grau2;
+        if (rnd2>70) color = grau3;
+        if (rnd2>80) color = weiss;
+        if (rnd2>90) color = gelb;
+        if (rnd2>95) color = violett;
+        
+        if (w===3) {
+        color = grau1;
+        }
+        
+        // console.log("x / y" + that.xa[i] + "/" + that.ya[i]);        
+        w/=2;
+        
+        
+        that.ctx.arc(that.xa[_i],that.ya[_i],w,0,2*Math.PI);
+        that.ctx.fillStyle=color;
+        that.ctx.fill();
+        
+    }
+
+    this.run = function(){
+        var c=document.getElementById(div);
+        c.width=this.dimx;
+        c.height=this.dimy;
+        this.ctx=c.getContext("2d");
+        //for (line=0;line<this.dimy; line++){
+        //    this.ctx.moveTo(0, line);
+        //    this.ctx.lineTo(this.dimx, line);
+        //    this.ctx.stroke();
+        //}
+        
+        for (h=0;h<this.stars; h++){
+            drawstar();
+        }
+
+        setInterval(function() {drawstar()}, this.delay);
+    }
+
+}
+
+
+
+</script>
+
+
+</html>

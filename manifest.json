@@ -1,0 +1,15 @@
+{
+    "name": "Sandmännchen",
+    "short_name": "Sandmännchen",
+    "start_url": "index.html",
+    "display": "browser",
+    "background_color": "#ffffff",
+    "theme_color": "#009d2a",
+    "icons": [
+       {
+        "src": "sandmann.png",
+        "sizes": "128x128",
+        "type": "image/png"
+      }
+    ]
+  }

@@ -10,6 +10,16 @@
         "src": "sandmann.png",
         "sizes": "128x128",
         "type": "image/png"
+      },
+      {
+        "src": "sandmann64.png",
+        "sizes": "64x64",
+        "type": "image/png"
+      },
+      {
+        "src": "sandmann32.png",
+        "sizes": "32x32",
+        "type": "image/png"
       }
     ]
   }
